@@ -10,7 +10,7 @@
 
 body {
   margin: 0;
-  font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial;
+  font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
   background: #f8f5ef;
 }
 
@@ -22,58 +22,84 @@ body {
 
 .card {
   background: white;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-radius: 24px;
+  padding: 26px;
+  box-shadow: 0 14px 35px rgba(0,0,0,0.12);
 }
 
 .title {
   text-align: center;
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 900;
 }
 
 .sub {
   text-align: center;
   color: #777;
-  margin-bottom: 20px;
-  font-size: 18px;
+  margin-bottom: 28px;
+  font-size: 20px;
 }
 
 input {
   width: 100%;
-  height: 60px;
-  margin-top: 10px;
-  border-radius: 12px;
+  height: 64px;
+  margin-top: 12px;
+  border-radius: 14px;
   border: 1px solid #ddd;
-  padding-left: 15px;
-  font-size: 20px;
+  padding-left: 18px;
+  font-size: 22px;
 }
 
 button {
   width: 100%;
-  height: 65px;
+  height: 72px;
   border: none;
-  border-radius: 15px;
-  margin-top: 15px;
-  font-size: 22px;
+  border-radius: 18px;
+  margin-top: 18px;
+  font-size: 26px;
   font-weight: 900;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.08s ease;
+  box-shadow: 0 8px 0 rgba(0,0,0,0.16);
+  cursor: pointer;
+}
+
+button:active {
+  transform: translateY(5px) scale(0.98);
+  box-shadow: 0 3px 0 rgba(0,0,0,0.18);
+  opacity: 0.85;
 }
 
 button:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-main { background: #4a2d18; color: white; }
 .btn-in { background: #1e8e3e; color: white; }
 .btn-out { background: #d93025; color: white; }
-.btn-reset { background: #eee2d4; color: #4a2d18; }
+
+.btn-reset {
+  background: #eee2d4;
+  color: #4a2d18;
+  height: 52px;
+  font-size: 17px;
+  border-radius: 14px;
+  margin-top: 24px;
+  box-shadow: none;
+  opacity: 0.8;
+}
+
+.btn-reset:active {
+  transform: translateY(2px) scale(0.99);
+  opacity: 0.65;
+}
 
 .status {
   text-align: center;
-  margin-top: 15px;
-  font-size: 18px;
-  font-weight: 800;
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: 900;
   color: #4a2d18;
 }
 </style>
@@ -83,30 +109,28 @@ button:disabled {
 
 <div class="container">
 
-<!-- 직원등록 -->
-<div id="register" class="card">
-  <div class="title">소바공방</div>
-  <div class="sub">평촌점 직원등록</div>
+  <div id="register" class="card">
+    <div class="title">소바공방</div>
+    <div class="sub">평촌점 직원등록</div>
 
-  <input id="name" placeholder="이름">
-  <input id="phone" placeholder="전화번호">
+    <input id="name" placeholder="이름">
+    <input id="phone" placeholder="전화번호">
 
-  <button class="btn-main" onclick="register()">등록하기</button>
-  <div id="regMsg" class="status"></div>
-</div>
+    <button class="btn-main" onclick="register()">등록하기</button>
+    <div id="regMsg" class="status"></div>
+  </div>
 
-<!-- 출퇴근 -->
-<div id="main" class="card" style="display:none;">
-  <div class="title">출퇴근</div>
-  <div id="userName" class="sub"></div>
+  <div id="main" class="card" style="display:none;">
+    <div class="title">출퇴근</div>
+    <div id="userName" class="sub"></div>
 
-  <button id="inBtn" class="btn-in" onclick="send('출근')">출근</button>
-  <button id="outBtn" class="btn-out" onclick="send('퇴근')">퇴근</button>
+    <button id="inBtn" class="btn-in" onclick="send('출근')">출근</button>
+    <button id="outBtn" class="btn-out" onclick="send('퇴근')">퇴근</button>
 
-  <button class="btn-reset" onclick="reset()">직원 재등록</button>
+    <button class="btn-reset" onclick="reset()">직원 정보 다시 등록</button>
 
-  <div id="msg" class="status"></div>
-</div>
+    <div id="msg" class="status"></div>
+  </div>
 
 </div>
 
@@ -114,78 +138,147 @@ button:disabled {
 const API_URL = "https://script.google.com/macros/s/AKfycbwqe8v-KtP_xn3eJ3keFMJ8a4G0zyfk6Rj5lBFZ8oSoVHm370qQ9xjUpi0bzEPbBxed/exec";
 
 const KEY = "SOBA_USER";
-const ACTION = "SOBA_ACTION";
+const ACTION_KEY = "SOBA_ACTION";
+const DATE_KEY = "SOBA_ACTION_DATE";
 
 window.onload = () => {
+  resetDailyIfNeeded();
+
   const saved = JSON.parse(localStorage.getItem(KEY));
-  if(saved){
+  if (saved) {
     showMain(saved);
+  }
+};
+
+function todayKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function resetDailyIfNeeded() {
+  const savedDate = localStorage.getItem(DATE_KEY);
+  const today = todayKey();
+
+  if (savedDate && savedDate !== today) {
+    localStorage.removeItem(ACTION_KEY);
+    localStorage.removeItem(DATE_KEY);
   }
 }
 
-function register(){
+function register() {
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
   const regMsg = document.getElementById("regMsg");
 
-  if(!name || !phone){
-    regMsg.innerText = "이름과 전화번호 입력하세요";
+  if (!name || !phone) {
+    regMsg.innerText = "이름과 전화번호를 입력하세요";
     return;
   }
 
-  const user = {name, phone};
+  const user = { name, phone };
   localStorage.setItem(KEY, JSON.stringify(user));
 
   showMain(user);
 }
 
-function showMain(user){
-  document.getElementById("register").style.display="none";
-  document.getElementById("main").style.display="block";
+function showMain(user) {
+  document.getElementById("register").style.display = "none";
+  document.getElementById("main").style.display = "block";
   document.getElementById("userName").innerText = user.name + "님";
   updateBtn();
 }
 
-function updateBtn(){
-  const last = localStorage.getItem(ACTION);
+function updateBtn() {
+  resetDailyIfNeeded();
 
-  document.getElementById("inBtn").disabled = (last==="출근");
-  document.getElementById("outBtn").disabled = (last!=="출근");
+  const last = localStorage.getItem(ACTION_KEY);
+
+  const inBtn = document.getElementById("inBtn");
+  const outBtn = document.getElementById("outBtn");
+  const msg = document.getElementById("msg");
+
+  if (!last) {
+    inBtn.disabled = false;
+    outBtn.disabled = true;
+    msg.innerText = "";
+    return;
+  }
+
+  if (last === "출근") {
+    inBtn.disabled = true;
+    outBtn.disabled = false;
+    msg.innerText = "출근 완료 · 퇴근 가능";
+    return;
+  }
+
+  if (last === "퇴근") {
+    inBtn.disabled = true;
+    outBtn.disabled = true;
+    msg.innerText = "오늘 출퇴근 완료";
+  }
 }
 
-async function send(type){
+async function send(type) {
   const user = JSON.parse(localStorage.getItem(KEY));
   const msg = document.getElementById("msg");
+  const inBtn = document.getElementById("inBtn");
+  const outBtn = document.getElementById("outBtn");
+
+  if (!user) {
+    msg.innerText = "직원 정보를 다시 등록해주세요";
+    return;
+  }
 
   msg.innerText = type + " 처리중...";
 
-  try{
-    await fetch(API_URL,{
-      method:"POST",
-      mode:"no-cors",
-      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+  if (type === "출근") inBtn.innerText = "출근 처리중...";
+  if (type === "퇴근") outBtn.innerText = "퇴근 처리중...";
+
+  inBtn.disabled = true;
+  outBtn.disabled = true;
+
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
       body: JSON.stringify({
-        name:user.name,
-        phone:user.phone,
-        type:type,
-        store:"평촌 소바공방",
-        timestamp:new Date().toISOString(),
-        userAgent:navigator.userAgent
+        name: user.name,
+        phone: user.phone,
+        type: type,
+        store: "평촌 소바공방",
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
       })
     });
 
-    localStorage.setItem(ACTION, type);
-    msg.innerText = type + " 완료";
+    localStorage.setItem(ACTION_KEY, type);
+    localStorage.setItem(DATE_KEY, todayKey());
 
-  }catch(e){
-    msg.innerText = "오류 발생";
+    msg.innerText = type + " 완료되었습니다";
+
+  } catch (e) {
+    msg.innerText = "오류가 발생했습니다. 다시 시도해주세요";
   }
+
+  inBtn.innerText = "출근";
+  outBtn.innerText = "퇴근";
 
   updateBtn();
 }
 
-function reset(){
-  localStorage.clear();
+function reset() {
+  if (!confirm("직원 정보를 다시 등록하시겠습니까?")) return;
+
+  localStorage.removeItem(KEY);
+  localStorage.removeItem(ACTION_KEY);
+  localStorage.removeItem(DATE_KEY);
+
   location.reload();
 }
 </script>
