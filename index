@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>평촌 소바공방 출퇴근</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+  background: #f8f5ef;
+}
+
+.container {
+  max-width: 480px;
+  margin: auto;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.title {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.sub {
+  text-align: center;
+  color: #777;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+input {
+  width: 100%;
+  height: 58px;
+  margin-top: 12px;
+  border-radius: 14px;
+  border: 1px solid #ddd;
+  padding: 0 15px;
+  font-size: 20px;
+}
+
+button {
+  width: 100%;
+  height: 64px;
+  border: none;
+  border-radius: 16px;
+  margin-top: 15px;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+button:disabled {
+  opacity: 0.45;
+}
+
+.btn-main { background: #4a2d18; color: white; }
+.btn-in { background: #1e8e3e; color: white; }
+.btn-out { background: #d93025; color: white; }
+.btn-reset { background: #eee2d4; color: #4a2d18; }
+
+.status {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #4a2d18;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div id="register" class="card">
+    <div class="title">소바공방</div>
+    <div class="sub">평촌점 직원등록</div>
+
+    <input id="name" placeholder="이름">
+    <input id="phone" placeholder="전화번호">
+
+    <button class="btn-main" onclick="register()">등록하기</button>
+    <div id="regMsg" class="status"></div>
+  </div>
+
+  <div id="main" class="card" style="display:none;">
+    <div class="title">출퇴근</div>
+    <div id="userName" class="sub"></div>
+
+    <button id="inBtn" class="btn-in" onclick="send('출근')">출근</button>
+    <button id="outBtn" class="btn-out" onclick="send('퇴근')">퇴근</button>
+
+    <button class="btn-reset" onclick="reset()">직원 재등록</button>
+
+    <div id="msg" class="status"></div>
+  </div>
+
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwqe8v-KtP_xn3eJ3keFMJ8a4G0zyfk6Rj5lBFZ8oSoVHm370qQ9xjUpi0bzEPbBxed/exec";
+
+const KEY = "SOBA_PYEONGCHON_USER";
+const ACTION = "SOBA_PYEONGCHON_ACTION";
+
+window.onload = function () {
+  const savedUser = getSavedUser();
+
+  if (savedUser && savedUser.name && savedUser.phone) {
+    showMain(savedUser);
+  }
+};
+
+function getSavedUser() {
+  try {
+    return JSON.parse(localStorage.getItem(KEY));
+  } catch (e) {
+    return null;
+  }
+}
+
+function register() {
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const regMsg = document.getElementById("regMsg");
+
+  if (!name || !phone) {
+    regMsg.innerText = "이름과 전화번호를 입력하세요.";
+    return;
+  }
+
+  const employee = {
+    name: name,
+    phone: phone
+  };
+
+  localStorage.setItem(KEY, JSON.stringify(employee));
+  regMsg.innerText = "등록되었습니다.";
+
+  showMain(employee);
+}
+
+function showMain(employee) {
+  document.getElementById("register").style.display = "none";
+  document.getElementById("main").style.display = "block";
+
+  document.getElementById("userName").innerText = employee.name + "님";
+
+  updateBtn();
+}
+
+function updateBtn() {
+  const last = localStorage.getItem(ACTION);
+
+  document.getElementById("inBtn").disabled = last === "출근";
+  document.getElementById("outBtn").disabled = last !== "출근";
+}
+
+async function send(type) {
+  const employee = getSavedUser();
+  const msg = document.getElementById("msg");
+  const inBtn = document.getElementById("inBtn");
+  const outBtn = document.getElementById("outBtn");
+
+  if (!employee) {
+    msg.innerText = "직원 정보가 없습니다. 다시 등록해주세요.";
+    return;
+  }
+
+  msg.innerText = type + " 처리중입니다...";
+  inBtn.disabled = true;
+  outBtn.disabled = true;
+
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        name: employee.name,
+        phone: employee.phone,
+        type: type,
+        store: "평촌 소바공방",
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      })
+    });
+
+    localStorage.setItem(ACTION, type);
+    msg.innerText = type + " 완료되었습니다.";
+  } catch (e) {
+    msg.innerText = "오류가 발생했습니다. 다시 시도해주세요.";
+  }
+
+  updateBtn();
+}
+
+function reset() {
+  if (!confirm("직원 정보를 다시 등록하시겠습니까?")) return;
+
+  localStorage.removeItem(KEY);
+  localStorage.removeItem(ACTION);
+
+  location.reload();
+}
+</script>
+
+</body>
+</html>
