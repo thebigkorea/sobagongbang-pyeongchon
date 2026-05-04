@@ -6,17 +6,76 @@
 <title>평촌 소바공방 출퇴근</title>
 
 <style>
-body { margin:0; font-family:"Noto Sans KR"; background:#f8f5ef; }
-.container { max-width:480px; margin:auto; padding:20px; }
-.card { background:white; border-radius:20px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); }
-.title { text-align:center; font-size:28px; font-weight:900; }
-.sub { text-align:center; color:#777; margin-bottom:20px; }
-input { width:100%; height:55px; margin-top:10px; border-radius:12px; border:1px solid #ddd; padding-left:15px; font-size:18px; }
-button { width:100%; height:60px; border:none; border-radius:15px; margin-top:15px; font-size:20px; font-weight:900; }
-.btn-main { background:#4a2d18; color:white; }
-.btn-in { background:#1e8e3e; color:white; }
-.btn-out { background:#d93025; color:white; }
-.status { text-align:center; margin-top:15px; font-weight:800; }
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial;
+  background: #f8f5ef;
+}
+
+.container {
+  max-width: 480px;
+  margin: auto;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.title {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.sub {
+  text-align: center;
+  color: #777;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+input {
+  width: 100%;
+  height: 60px;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  padding-left: 15px;
+  font-size: 20px;
+}
+
+button {
+  width: 100%;
+  height: 65px;
+  border: none;
+  border-radius: 15px;
+  margin-top: 15px;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+button:disabled {
+  opacity: 0.4;
+}
+
+.btn-main { background: #4a2d18; color: white; }
+.btn-in { background: #1e8e3e; color: white; }
+.btn-out { background: #d93025; color: white; }
+.btn-reset { background: #eee2d4; color: #4a2d18; }
+
+.status {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #4a2d18;
+}
 </style>
 </head>
 
@@ -24,27 +83,29 @@ button { width:100%; height:60px; border:none; border-radius:15px; margin-top:15
 
 <div class="container">
 
+<!-- 직원등록 -->
 <div id="register" class="card">
-<div class="title">소바공방</div>
-<div class="sub">평촌점 직원등록</div>
+  <div class="title">소바공방</div>
+  <div class="sub">평촌점 직원등록</div>
 
-<input id="name" placeholder="이름">
-<input id="phone" placeholder="전화번호">
+  <input id="name" placeholder="이름">
+  <input id="phone" placeholder="전화번호">
 
-<button class="btn-main" onclick="register()">등록하기</button>
-<div id="regMsg" class="status"></div>
+  <button class="btn-main" onclick="register()">등록하기</button>
+  <div id="regMsg" class="status"></div>
 </div>
 
+<!-- 출퇴근 -->
 <div id="main" class="card" style="display:none;">
-<div class="title">출퇴근</div>
-<div id="userName" class="sub"></div>
+  <div class="title">출퇴근</div>
+  <div id="userName" class="sub"></div>
 
-<button id="inBtn" class="btn-in" onclick="send('출근')">출근</button>
-<button id="outBtn" class="btn-out" onclick="send('퇴근')">퇴근</button>
+  <button id="inBtn" class="btn-in" onclick="send('출근')">출근</button>
+  <button id="outBtn" class="btn-out" onclick="send('퇴근')">퇴근</button>
 
-<button onclick="reset()">직원 재등록</button>
+  <button class="btn-reset" onclick="reset()">직원 재등록</button>
 
-<div id="msg" class="status"></div>
+  <div id="msg" class="status"></div>
 </div>
 
 </div>
@@ -65,9 +126,10 @@ window.onload = () => {
 function register(){
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
+  const regMsg = document.getElementById("regMsg");
 
   if(!name || !phone){
-    document.getElementById("regMsg").innerText="입력하세요";
+    regMsg.innerText = "이름과 전화번호 입력하세요";
     return;
   }
 
@@ -86,6 +148,7 @@ function showMain(user){
 
 function updateBtn(){
   const last = localStorage.getItem(ACTION);
+
   document.getElementById("inBtn").disabled = (last==="출근");
   document.getElementById("outBtn").disabled = (last!=="출근");
 }
@@ -94,7 +157,7 @@ async function send(type){
   const user = JSON.parse(localStorage.getItem(KEY));
   const msg = document.getElementById("msg");
 
-  msg.innerText = "처리중...";
+  msg.innerText = type + " 처리중...";
 
   try{
     await fetch(API_URL,{
