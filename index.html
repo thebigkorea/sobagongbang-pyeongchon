@@ -1,287 +1,363 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>평촌 소바공방 출퇴근</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>소바공방 평촌점 출퇴근</title>
 
-<style>
-* { box-sizing: border-box; }
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
 
-body {
-  margin: 0;
-  font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
-  background: #f8f5ef;
-}
+    .wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 22px;
+    }
 
-.container {
-  max-width: 480px;
-  margin: auto;
-  padding: 20px;
-}
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      margin-top: 20px;
+    }
 
-.card {
-  background: white;
-  border-radius: 24px;
-  padding: 26px;
-  box-shadow: 0 14px 35px rgba(0,0,0,0.12);
-}
+    h1 {
+      text-align: center;
+      font-size: 26px;
+      margin: 10px 0 6px;
+    }
 
-.title {
-  text-align: center;
-  font-size: 34px;
-  font-weight: 900;
-}
+    .store {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #555;
+      margin-bottom: 20px;
+    }
 
-.sub {
-  text-align: center;
-  color: #777;
-  margin-bottom: 28px;
-  font-size: 20px;
-}
+    label {
+      display: block;
+      margin-top: 16px;
+      font-size: 16px;
+      font-weight: bold;
+    }
 
-input {
-  width: 100%;
-  height: 64px;
-  margin-top: 12px;
-  border-radius: 14px;
-  border: 1px solid #ddd;
-  padding-left: 18px;
-  font-size: 22px;
-}
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 15px;
+      font-size: 18px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      margin-top: 8px;
+    }
 
-button {
-  width: 100%;
-  height: 72px;
-  border: none;
-  border-radius: 18px;
-  margin-top: 18px;
-  font-size: 26px;
-  font-weight: 900;
-  transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.08s ease;
-  box-shadow: 0 8px 0 rgba(0,0,0,0.16);
-  cursor: pointer;
-}
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 18px;
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 16px;
+      cursor: pointer;
+    }
 
-button:active {
-  transform: translateY(5px) scale(0.98);
-  box-shadow: 0 3px 0 rgba(0,0,0,0.18);
-  opacity: 0.85;
-}
+    .primary {
+      background: #1a73e8;
+      color: white;
+    }
 
-button:disabled {
-  opacity: 0.35;
-  transform: none;
-  box-shadow: none;
-}
+    .checkin {
+      background: #188038;
+      color: white;
+    }
 
-.btn-main { background: #4a2d18; color: white; }
-.btn-in { background: #1e8e3e; color: white; }
-.btn-out { background: #d93025; color: white; }
+    .checkout {
+      background: #d93025;
+      color: white;
+    }
 
-.btn-reset {
-  background: #eee2d4;
-  color: #4a2d18;
-  height: 52px;
-  font-size: 17px;
-  border-radius: 14px;
-  margin-top: 24px;
-  box-shadow: none;
-  opacity: 0.8;
-}
+    .gray {
+      background: #666;
+      color: white;
+    }
 
-.btn-reset:active {
-  transform: translateY(2px) scale(0.99);
-  opacity: 0.65;
-}
+    .msg {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 12px;
+      background: #eef3ff;
+      font-size: 16px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
 
-.status {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 20px;
-  font-weight: 900;
-  color: #4a2d18;
-}
-</style>
+    .hidden {
+      display: none;
+    }
+
+    .info {
+      margin-top: 12px;
+      font-size: 15px;
+      color: #666;
+      text-align: center;
+    }
+
+    .userbox {
+      background: #f1f3f4;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 17px;
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="wrap">
 
-<div class="container">
+    <h1>출퇴근 등록</h1>
+    <div class="store">소바공방 평촌점</div>
 
-  <div id="register" class="card">
-    <div class="title">소바공방</div>
-    <div class="sub">평촌점 직원등록</div>
+    <div id="loginCard" class="card">
+      <label>직원명</label>
+      <input id="name" type="text" placeholder="직원명을 입력하세요" />
 
-    <input id="name" placeholder="이름">
-    <input id="phone" placeholder="전화번호">
+      <label>전화번호</label>
+      <input id="phone" type="tel" placeholder="01012345678" />
 
-    <button class="btn-main" onclick="register()">등록하기</button>
-    <div id="regMsg" class="status"></div>
+      <button class="primary" onclick="register()">직원등록</button>
+      <button class="gray" onclick="login()">로그인</button>
+
+      <div id="loginMsg" class="msg hidden"></div>
+    </div>
+
+    <div id="mainCard" class="card hidden">
+      <div class="userbox">
+        <div><b>매장:</b> 소바공방 평촌점</div>
+        <div><b>직원:</b> <span id="userName"></span></div>
+        <div><b>전화:</b> <span id="userPhone"></span></div>
+      </div>
+
+      <button class="checkin" onclick="attendance('출근')">출근하기</button>
+      <button class="checkout" onclick="attendance('퇴근')">퇴근하기</button>
+      <button class="gray" onclick="logout()">다른 직원으로 로그인</button>
+
+      <div class="info">
+        출퇴근 시 현재 위치와 매장까지의 거리가 함께 저장됩니다.
+      </div>
+
+      <div id="mainMsg" class="msg hidden"></div>
+    </div>
+
   </div>
 
-  <div id="main" class="card" style="display:none;">
-    <div class="title">출퇴근</div>
-    <div id="userName" class="sub"></div>
+  <script>
+    /************************************
+     * 소바공방 평촌점 위치
+     * 실제 매장 GPS와 다르면 이 두 줄만 수정
+     ************************************/
+    const STORE_LAT = 37.3906;
+    const STORE_LNG = 126.9507;
 
-    <button id="inBtn" class="btn-in" onclick="send('출근')">출근</button>
-    <button id="outBtn" class="btn-out" onclick="send('퇴근')">퇴근</button>
+    const STORAGE_KEY = "sobagongbang_pyeongchon_employee";
 
-    <button class="btn-reset" onclick="reset()">직원 정보 다시 등록</button>
+    window.onload = function () {
+      const saved = localStorage.getItem(STORAGE_KEY);
 
-    <div id="msg" class="status"></div>
-  </div>
+      if (saved) {
+        const emp = JSON.parse(saved);
+        showMain(emp);
+      }
+    };
 
-</div>
+    function getInputEmployee() {
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.replace(/[^0-9]/g, "");
 
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwqe8v-KtP_xn3eJ3keFMJ8a4G0zyfk6Rj5lBFZ8oSoVHm370qQ9xjUpi0bzEPbBxed/exec";
+      if (!name || !phone) {
+        showLoginMsg("직원명과 전화번호를 입력하세요.");
+        return null;
+      }
 
-const KEY = "SOBA_USER";
-const ACTION_KEY = "SOBA_ACTION";
-const DATE_KEY = "SOBA_ACTION_DATE";
-
-window.onload = () => {
-  resetDailyIfNeeded();
-
-  const saved = JSON.parse(localStorage.getItem(KEY));
-  if (saved) {
-    showMain(saved);
-  }
-};
-
-function todayKey() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function resetDailyIfNeeded() {
-  const savedDate = localStorage.getItem(DATE_KEY);
-  const today = todayKey();
-
-  if (savedDate && savedDate !== today) {
-    localStorage.removeItem(ACTION_KEY);
-    localStorage.removeItem(DATE_KEY);
-  }
-}
-
-function register() {
-  const name = document.getElementById("name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const regMsg = document.getElementById("regMsg");
-
-  if (!name || !phone) {
-    regMsg.innerText = "이름과 전화번호를 입력하세요";
-    return;
-  }
-
-  const user = { name, phone };
-  localStorage.setItem(KEY, JSON.stringify(user));
-
-  showMain(user);
-}
-
-function showMain(user) {
-  document.getElementById("register").style.display = "none";
-  document.getElementById("main").style.display = "block";
-  document.getElementById("userName").innerText = user.name + "님";
-  updateBtn();
-}
-
-function updateBtn() {
-  resetDailyIfNeeded();
-
-  const last = localStorage.getItem(ACTION_KEY);
-
-  const inBtn = document.getElementById("inBtn");
-  const outBtn = document.getElementById("outBtn");
-  const msg = document.getElementById("msg");
-
-  if (!last) {
-    inBtn.disabled = false;
-    outBtn.disabled = true;
-    msg.innerText = "";
-    return;
-  }
-
-  if (last === "출근") {
-    inBtn.disabled = true;
-    outBtn.disabled = false;
-    msg.innerText = "출근 완료 · 퇴근 가능";
-    return;
-  }
-
-  if (last === "퇴근") {
-    inBtn.disabled = true;
-    outBtn.disabled = true;
-    msg.innerText = "오늘 출퇴근 완료";
-  }
-}
-
-async function send(type) {
-  const user = JSON.parse(localStorage.getItem(KEY));
-  const msg = document.getElementById("msg");
-  const inBtn = document.getElementById("inBtn");
-  const outBtn = document.getElementById("outBtn");
-
-  if (!user) {
-    msg.innerText = "직원 정보를 다시 등록해주세요";
-    return;
-  }
-
-  msg.innerText = type + " 처리중...";
-
-  if (type === "출근") inBtn.innerText = "출근 처리중...";
-  if (type === "퇴근") outBtn.innerText = "퇴근 처리중...";
-
-  inBtn.disabled = true;
-  outBtn.disabled = true;
-
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify({
-        name: user.name,
-        phone: user.phone,
-        type: type,
-        store: "평촌 소바공방",
-        timestamp: new Date().toISOString(),
+      return {
+        name,
+        phone,
         userAgent: navigator.userAgent
-      })
-    });
+      };
+    }
 
-    localStorage.setItem(ACTION_KEY, type);
-    localStorage.setItem(DATE_KEY, todayKey());
+    function register() {
+      const data = getInputEmployee();
+      if (!data) return;
 
-    msg.innerText = type + " 완료되었습니다";
+      showLoginMsg("직원등록 처리중입니다...");
 
-  } catch (e) {
-    msg.innerText = "오류가 발생했습니다. 다시 시도해주세요";
-  }
+      google.script.run
+        .withSuccessHandler(function (res) {
+          if (res && res.success) {
+            const emp = res.employee || data;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(emp));
+            showMain(emp);
+          } else {
+            showLoginMsg(res.message || "직원등록에 실패했습니다.");
+          }
+        })
+        .withFailureHandler(function (err) {
+          showLoginMsg("오류가 발생했습니다.\n" + err.message);
+        })
+        .registerEmployee(data);
+    }
 
-  inBtn.innerText = "출근";
-  outBtn.innerText = "퇴근";
+    function login() {
+      const data = getInputEmployee();
+      if (!data) return;
 
-  updateBtn();
-}
+      showLoginMsg("로그인 처리중입니다...");
 
-function reset() {
-  if (!confirm("직원 정보를 다시 등록하시겠습니까?")) return;
+      google.script.run
+        .withSuccessHandler(function (res) {
+          if (res && res.success) {
+            const emp = res.employee || data;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(emp));
+            showMain(emp);
+          } else {
+            showLoginMsg(res.message || "로그인에 실패했습니다.");
+          }
+        })
+        .withFailureHandler(function (err) {
+          showLoginMsg("오류가 발생했습니다.\n" + err.message);
+        })
+        .loginEmployee(data);
+    }
 
-  localStorage.removeItem(KEY);
-  localStorage.removeItem(ACTION_KEY);
-  localStorage.removeItem(DATE_KEY);
+    function attendance(type) {
+      const saved = localStorage.getItem(STORAGE_KEY);
 
-  location.reload();
-}
-</script>
+      if (!saved) {
+        showMainMsg("직원 정보가 없습니다. 다시 로그인하세요.");
+        return;
+      }
 
+      const emp = JSON.parse(saved);
+
+      showMainMsg(type + " 위치 확인중입니다...");
+
+      if (!navigator.geolocation) {
+        showMainMsg("이 기기에서는 위치 확인을 지원하지 않습니다.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+
+          const distanceMeter = calculateDistance(
+            lat,
+            lng,
+            STORE_LAT,
+            STORE_LNG
+          );
+
+          const data = {
+            name: emp.name,
+            phone: emp.phone,
+            type: type,
+            lat: lat,
+            lng: lng,
+            distance: Math.round(distanceMeter) + "m",
+            userAgent: navigator.userAgent
+          };
+
+          showMainMsg(type + " 처리중입니다...\n현재 거리: " + data.distance);
+
+          google.script.run
+            .withSuccessHandler(function (res) {
+              if (res && res.success) {
+                showMainMsg(
+                  res.message + "\n" +
+                  "시간: " + res.time + "\n" +
+                  "매장과의 거리: " + data.distance
+                );
+              } else {
+                showMainMsg(res.message || type + " 처리에 실패했습니다.");
+              }
+            })
+            .withFailureHandler(function (err) {
+              showMainMsg("오류가 발생했습니다.\n" + err.message);
+            })
+            .saveAttendance(data);
+        },
+        function (err) {
+          let msg = "위치 확인에 실패했습니다.";
+
+          if (err.code === 1) msg = "위치 권한이 거부되었습니다. 브라우저 위치 권한을 허용해주세요.";
+          if (err.code === 2) msg = "현재 위치를 확인할 수 없습니다.";
+          if (err.code === 3) msg = "위치 확인 시간이 초과되었습니다.";
+
+          showMainMsg(msg);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
+        }
+      );
+    }
+
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+      const R = 6371000;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function toRad(value) {
+      return value * Math.PI / 180;
+    }
+
+    function showMain(emp) {
+      document.getElementById("loginCard").classList.add("hidden");
+      document.getElementById("mainCard").classList.remove("hidden");
+
+      document.getElementById("userName").innerText = emp.name || "";
+      document.getElementById("userPhone").innerText = emp.phone || "";
+    }
+
+    function logout() {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+
+    function showLoginMsg(text) {
+      const el = document.getElementById("loginMsg");
+      el.classList.remove("hidden");
+      el.innerText = text;
+    }
+
+    function showMainMsg(text) {
+      const el = document.getElementById("mainMsg");
+      el.classList.remove("hidden");
+      el.innerText = text;
+    }
+  </script>
 </body>
 </html>
