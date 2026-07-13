@@ -3,14 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>평촌 소바공방 출퇴근</title>
 
 <style>
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
-  font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+  font-family:
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    Arial,
+    sans-serif;
   background: #f8f5ef;
 }
 
@@ -24,7 +31,7 @@ body {
   background: white;
   border-radius: 24px;
   padding: 26px;
-  box-shadow: 0 14px 35px rgba(0,0,0,0.12);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.12);
 }
 
 .title {
@@ -40,14 +47,28 @@ body {
   font-size: 20px;
 }
 
+.store-info {
+  margin: -12px 0 20px;
+  text-align: center;
+  color: #8a735f;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
 input {
   width: 100%;
   height: 64px;
   margin-top: 12px;
   border-radius: 14px;
   border: 1px solid #ddd;
-  padding-left: 18px;
+  padding: 0 18px;
   font-size: 22px;
+  outline: none;
+}
+
+input:focus {
+  border-color: #4a2d18;
+  box-shadow: 0 0 0 3px rgba(74, 45, 24, 0.1);
 }
 
 button {
@@ -58,14 +79,17 @@ button {
   margin-top: 18px;
   font-size: 26px;
   font-weight: 900;
-  transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.08s ease;
-  box-shadow: 0 8px 0 rgba(0,0,0,0.16);
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    opacity 0.08s ease;
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.16);
   cursor: pointer;
 }
 
 button:active {
   transform: translateY(5px) scale(0.98);
-  box-shadow: 0 3px 0 rgba(0,0,0,0.18);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18);
   opacity: 0.85;
 }
 
@@ -73,11 +97,23 @@ button:disabled {
   opacity: 0.35;
   transform: none;
   box-shadow: none;
+  cursor: default;
 }
 
-.btn-main { background: #4a2d18; color: white; }
-.btn-in { background: #1e8e3e; color: white; }
-.btn-out { background: #d93025; color: white; }
+.btn-main {
+  background: #4a2d18;
+  color: white;
+}
+
+.btn-in {
+  background: #1e8e3e;
+  color: white;
+}
+
+.btn-out {
+  background: #d93025;
+  color: white;
+}
 
 .btn-reset {
   background: #eee2d4;
@@ -98,9 +134,65 @@ button:disabled {
 .status {
   text-align: center;
   margin-top: 20px;
+  min-height: 30px;
   font-size: 20px;
   font-weight: 900;
   color: #4a2d18;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.status.error {
+  color: #b91c1c;
+}
+
+.status.success {
+  color: #166534;
+}
+
+.location-status {
+  display: none;
+  margin-top: 18px;
+  padding: 13px 14px;
+  border-radius: 14px;
+  background: #f7f1e9;
+  color: #5e4937;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.location-status.show {
+  display: block;
+}
+
+@media (max-width: 520px) {
+  .container {
+    padding: 14px;
+  }
+
+  .card {
+    padding: 24px 20px;
+  }
+
+  .title {
+    font-size: 31px;
+  }
+
+  .sub {
+    font-size: 18px;
+  }
+
+  input {
+    height: 60px;
+    font-size: 20px;
+  }
+
+  button {
+    height: 68px;
+    font-size: 24px;
+  }
 }
 </style>
 </head>
@@ -109,57 +201,618 @@ button:disabled {
 
 <div class="container">
 
+  <!-- 직원등록 화면 -->
   <div id="register" class="card">
     <div class="title">소바공방</div>
     <div class="sub">평촌점 직원등록</div>
 
-    <input id="name" placeholder="이름">
-    <input id="phone" placeholder="전화번호">
+    <div class="store-info">
+      롯데백화점 평촌점 7층
+    </div>
 
-    <button class="btn-main" onclick="register()">등록하기</button>
+    <input
+      id="name"
+      type="text"
+      placeholder="이름"
+      autocomplete="name"
+    >
+
+    <input
+      id="phone"
+      type="tel"
+      inputmode="numeric"
+      placeholder="전화번호"
+      autocomplete="tel"
+      maxlength="13"
+      oninput="formatPhoneInput(this)"
+      onkeydown="handleRegisterEnter(event)"
+    >
+
+    <button
+      id="registerBtn"
+      class="btn-main"
+      onclick="registerEmployee()"
+    >
+      등록하기
+    </button>
+
     <div id="regMsg" class="status"></div>
   </div>
 
+
+  <!-- 출퇴근 화면 -->
   <div id="main" class="card" style="display:none;">
     <div class="title">출퇴근</div>
     <div id="userName" class="sub"></div>
 
-    <button id="inBtn" class="btn-in" onclick="send('출근')">출근</button>
-    <button id="outBtn" class="btn-out" onclick="send('퇴근')">퇴근</button>
+    <div class="store-info">
+      평촌 소바공방 · 롯데백화점 7층
+    </div>
 
-    <button class="btn-reset" onclick="reset()">직원 정보 다시 등록</button>
+    <button
+      id="inBtn"
+      class="btn-in"
+      onclick="sendAttendance('출근')"
+    >
+      출근
+    </button>
+
+    <button
+      id="outBtn"
+      class="btn-out"
+      onclick="sendAttendance('퇴근')"
+    >
+      퇴근
+    </button>
+
+    <div id="locationStatus" class="location-status"></div>
+
+    <button
+      class="btn-reset"
+      onclick="resetEmployee()"
+    >
+      직원 정보 다시 등록
+    </button>
 
     <div id="msg" class="status"></div>
   </div>
 
 </div>
 
+
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwqe8v-KtP_xn3eJ3keFMJ8a4G0zyfk6Rj5lBFZ8oSoVHm370qQ9xjUpi0bzEPbBxed/exec";
+/************************************************
+ * 평촌 소바공방 기본 설정
+ ************************************************/
 
-const KEY = "SOBA_USER";
-const ACTION_KEY = "SOBA_ACTION";
-const DATE_KEY = "SOBA_ACTION_DATE";
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbwqe8v-KtP_xn3eJ3keFMJ8a4G0zyfk6Rj5lBFZ8oSoVHm370qQ9xjUpi0bzEPbBxed/exec";
 
-window.onload = () => {
+const STORE_NAME = "평촌 소바공방";
+
+/*
+ * 롯데백화점 평촌점 건물 중심 기준 좌표
+ * 실제 매장 테스트 후 필요하면 조정
+ */
+const STORE_LAT = 37.3898500;
+const STORE_LNG = 126.9498194;
+
+/*
+ * GPS 거리 제한은 적용하지 않습니다.
+ * 현재는 거리 기록과 관리자 확인용입니다.
+ */
+const KEY = "SOBA_PYEONGCHON_USER";
+const ACTION_KEY = "SOBA_PYEONGCHON_ACTION";
+const DATE_KEY = "SOBA_PYEONGCHON_ACTION_DATE";
+
+
+/************************************************
+ * 화면 시작
+ ************************************************/
+
+window.addEventListener("load", function() {
   resetDailyIfNeeded();
 
-  const saved = JSON.parse(localStorage.getItem(KEY));
-  if (saved) {
-    showMain(saved);
-  }
-};
+  const savedUser = getSavedUser();
 
-function todayKey() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  if (savedUser) {
+    showMain(savedUser);
+  }
+});
+
+
+/************************************************
+ * 직원등록
+ ************************************************/
+
+async function registerEmployee() {
+  const nameInput = document.getElementById("name");
+  const phoneInput = document.getElementById("phone");
+  const registerBtn = document.getElementById("registerBtn");
+  const regMsg = document.getElementById("regMsg");
+
+  const name = nameInput.value.trim();
+  const phone = normalizePhone(phoneInput.value);
+
+  clearStatus(regMsg);
+
+  if (!name) {
+    showStatus(regMsg, "이름을 입력하세요.", "error");
+    nameInput.focus();
+    return;
+  }
+
+  if (phone.length < 10) {
+    showStatus(
+      regMsg,
+      "전화번호를 정확히 입력하세요.",
+      "error"
+    );
+
+    phoneInput.focus();
+    return;
+  }
+
+  registerBtn.disabled = true;
+  registerBtn.innerText = "등록 처리중...";
+
+  showStatus(
+    regMsg,
+    "직원 정보를 등록하고 있습니다.",
+    ""
+  );
+
+  try {
+    const result = await apiRequest({
+      action: "register",
+      name: name,
+      phone: phone,
+      userAgent: navigator.userAgent
+    });
+
+    if (!result || result.success !== true) {
+      throw new Error(
+        result && result.message
+          ? result.message
+          : "직원등록에 실패했습니다."
+      );
+    }
+
+    const employee = result.employee || {
+      name: name,
+      phone: phone
+    };
+
+    const user = {
+      name: employee.name || name,
+      phone: normalizePhone(employee.phone || phone)
+    };
+
+    localStorage.setItem(
+      KEY,
+      JSON.stringify(user)
+    );
+
+    showStatus(
+      regMsg,
+      result.message || "직원 등록이 완료되었습니다.",
+      "success"
+    );
+
+    setTimeout(function() {
+      showMain(user);
+    }, 500);
+
+  } catch (error) {
+    showStatus(
+      regMsg,
+      "등록 실패: " + getErrorMessage(error),
+      "error"
+    );
+
+  } finally {
+    registerBtn.disabled = false;
+    registerBtn.innerText = "등록하기";
+  }
 }
 
+
+function handleRegisterEnter(event) {
+  if (event.key === "Enter") {
+    registerEmployee();
+  }
+}
+
+
+/************************************************
+ * 출퇴근 전송
+ ************************************************/
+
+async function sendAttendance(type) {
+  const user = getSavedUser();
+
+  const msg = document.getElementById("msg");
+  const inBtn = document.getElementById("inBtn");
+  const outBtn = document.getElementById("outBtn");
+  const locationStatus =
+    document.getElementById("locationStatus");
+
+  clearStatus(msg);
+
+  if (!user) {
+    showStatus(
+      msg,
+      "직원 정보를 다시 등록해주세요.",
+      "error"
+    );
+
+    return;
+  }
+
+  const previousAction =
+    localStorage.getItem(ACTION_KEY);
+
+  inBtn.disabled = true;
+  outBtn.disabled = true;
+
+  if (type === "출근") {
+    inBtn.innerText = "출근 처리중...";
+  }
+
+  if (type === "퇴근") {
+    outBtn.innerText = "퇴근 처리중...";
+  }
+
+  showStatus(msg, "현재 위치를 확인하고 있습니다.", "");
+
+  locationStatus.classList.add("show");
+  locationStatus.innerText =
+    "GPS 위치정보를 확인하는 중입니다.";
+
+  try {
+    const locationData = await getLocation();
+
+    renderLocationStatus(locationData);
+
+    showStatus(
+      msg,
+      type + " 기록을 저장하고 있습니다.",
+      ""
+    );
+
+    const result = await apiRequest({
+      name: user.name,
+      phone: user.phone,
+      type: type,
+      store: STORE_NAME,
+      timestamp: new Date().toISOString(),
+
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
+      distance: locationData.distance,
+
+      userAgent: navigator.userAgent
+    });
+
+    if (!result || result.success !== true) {
+      throw new Error(
+        result && result.message
+          ? result.message
+          : type + " 처리에 실패했습니다."
+      );
+    }
+
+    localStorage.setItem(ACTION_KEY, type);
+    localStorage.setItem(DATE_KEY, todayKey());
+
+    updateButtons();
+
+    showStatus(
+      msg,
+      result.message || type + " 처리가 완료되었습니다.",
+      "success"
+    );
+
+  } catch (error) {
+    restoreButtons(previousAction);
+
+    showStatus(
+      msg,
+      "처리 실패: " + getErrorMessage(error),
+      "error"
+    );
+
+  } finally {
+    inBtn.innerText = "출근";
+    outBtn.innerText = "퇴근";
+  }
+}
+
+
+/************************************************
+ * Apps Script API 통신
+ ************************************************/
+
+async function apiRequest(data) {
+  const response = await fetch(API_URL, {
+    method: "POST",
+
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
+
+    body: JSON.stringify(data)
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      "서버 응답 오류: " + response.status
+    );
+  }
+
+  const text = await response.text();
+
+  if (!text) {
+    throw new Error("서버 응답이 없습니다.");
+  }
+
+  try {
+    return JSON.parse(text);
+
+  } catch (error) {
+    throw new Error(
+      "서버 응답 형식이 올바르지 않습니다."
+    );
+  }
+}
+
+
+/************************************************
+ * GPS 위치 확인
+ ************************************************/
+
+function getLocation() {
+  return new Promise(function(resolve) {
+    if (!navigator.geolocation) {
+      resolve({
+        latitude: "",
+        longitude: "",
+        distance: "GPS미지원",
+        available: false,
+        message: "이 기기는 GPS를 지원하지 않습니다."
+      });
+
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        const latitude =
+          position.coords.latitude;
+
+        const longitude =
+          position.coords.longitude;
+
+        const distance = Math.round(
+          calculateDistanceMeters(
+            latitude,
+            longitude,
+            STORE_LAT,
+            STORE_LNG
+          )
+        );
+
+        resolve({
+          latitude: latitude,
+          longitude: longitude,
+          distance: distance,
+          available: true,
+          message:
+            "매장 기준 약 " +
+            distance.toLocaleString("ko-KR") +
+            "m"
+        });
+      },
+
+      function(error) {
+        let errorMessage =
+          "위치정보를 확인하지 못했습니다.";
+
+        if (error && error.code === 1) {
+          errorMessage =
+            "위치 권한이 허용되지 않았습니다.";
+        }
+
+        if (error && error.code === 2) {
+          errorMessage =
+            "현재 위치를 확인할 수 없습니다.";
+        }
+
+        if (error && error.code === 3) {
+          errorMessage =
+            "위치 확인 시간이 초과되었습니다.";
+        }
+
+        resolve({
+          latitude: "",
+          longitude: "",
+          distance: "위치권한없음",
+          available: false,
+          message: errorMessage
+        });
+      },
+
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  });
+}
+
+
+function renderLocationStatus(locationData) {
+  const element =
+    document.getElementById("locationStatus");
+
+  element.classList.add("show");
+
+  if (locationData.available) {
+    element.innerText =
+      "위치 확인 완료 · " +
+      locationData.message;
+
+    return;
+  }
+
+  element.innerText =
+    locationData.message +
+    "\n출퇴근 기록은 계속 저장됩니다.";
+}
+
+
+function calculateDistanceMeters(
+  lat1,
+  lng1,
+  lat2,
+  lng2
+) {
+  const earthRadius = 6371000;
+
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+
+  const value =
+    Math.sin(dLat / 2) *
+    Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+    Math.cos(toRadians(lat2)) *
+    Math.sin(dLng / 2) *
+    Math.sin(dLng / 2);
+
+  const angle = 2 * Math.atan2(
+    Math.sqrt(value),
+    Math.sqrt(1 - value)
+  );
+
+  return earthRadius * angle;
+}
+
+
+function toRadians(value) {
+  return value * Math.PI / 180;
+}
+
+
+/************************************************
+ * 자동로그인 및 버튼 상태
+ ************************************************/
+
+function showMain(user) {
+  document.getElementById("register").style.display =
+    "none";
+
+  document.getElementById("main").style.display =
+    "block";
+
+  document.getElementById("userName").innerText =
+    user.name + "님";
+
+  updateButtons();
+}
+
+
+function updateButtons() {
+  resetDailyIfNeeded();
+
+  const lastAction =
+    localStorage.getItem(ACTION_KEY);
+
+  const inBtn = document.getElementById("inBtn");
+  const outBtn = document.getElementById("outBtn");
+  const msg = document.getElementById("msg");
+
+  if (!lastAction) {
+    inBtn.disabled = false;
+    outBtn.disabled = true;
+
+    clearStatus(msg);
+    return;
+  }
+
+  if (lastAction === "출근") {
+    inBtn.disabled = true;
+    outBtn.disabled = false;
+
+    showStatus(
+      msg,
+      "출근 완료 · 퇴근 가능합니다.",
+      "success"
+    );
+
+    return;
+  }
+
+  if (lastAction === "퇴근") {
+    inBtn.disabled = true;
+    outBtn.disabled = true;
+
+    showStatus(
+      msg,
+      "오늘 출퇴근이 모두 완료되었습니다.",
+      "success"
+    );
+  }
+}
+
+
+function restoreButtons(lastAction) {
+  const inBtn = document.getElementById("inBtn");
+  const outBtn = document.getElementById("outBtn");
+
+  if (lastAction === "출근") {
+    inBtn.disabled = true;
+    outBtn.disabled = false;
+    return;
+  }
+
+  if (lastAction === "퇴근") {
+    inBtn.disabled = true;
+    outBtn.disabled = true;
+    return;
+  }
+
+  inBtn.disabled = false;
+  outBtn.disabled = true;
+}
+
+
+/************************************************
+ * 날짜별 상태 초기화
+ ************************************************/
+
+function todayKey() {
+  const date = new Date();
+
+  const year = date.getFullYear();
+
+  const month = String(
+    date.getMonth() + 1
+  ).padStart(2, "0");
+
+  const day = String(
+    date.getDate()
+  ).padStart(2, "0");
+
+  return year + "-" + month + "-" + day;
+}
+
+
 function resetDailyIfNeeded() {
-  const savedDate = localStorage.getItem(DATE_KEY);
+  const savedDate =
+    localStorage.getItem(DATE_KEY);
+
   const today = todayKey();
 
   if (savedDate && savedDate !== today) {
@@ -168,118 +821,121 @@ function resetDailyIfNeeded() {
   }
 }
 
-function register() {
-  const name = document.getElementById("name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const regMsg = document.getElementById("regMsg");
 
-  if (!name || !phone) {
-    regMsg.innerText = "이름과 전화번호를 입력하세요";
-    return;
-  }
+/************************************************
+ * 직원정보 초기화
+ ************************************************/
 
-  const user = { name, phone };
-  localStorage.setItem(KEY, JSON.stringify(user));
+function resetEmployee() {
+  const confirmed = confirm(
+    "직원 정보를 다시 등록하시겠습니까?"
+  );
 
-  showMain(user);
-}
-
-function showMain(user) {
-  document.getElementById("register").style.display = "none";
-  document.getElementById("main").style.display = "block";
-  document.getElementById("userName").innerText = user.name + "님";
-  updateBtn();
-}
-
-function updateBtn() {
-  resetDailyIfNeeded();
-
-  const last = localStorage.getItem(ACTION_KEY);
-
-  const inBtn = document.getElementById("inBtn");
-  const outBtn = document.getElementById("outBtn");
-  const msg = document.getElementById("msg");
-
-  if (!last) {
-    inBtn.disabled = false;
-    outBtn.disabled = true;
-    msg.innerText = "";
-    return;
-  }
-
-  if (last === "출근") {
-    inBtn.disabled = true;
-    outBtn.disabled = false;
-    msg.innerText = "출근 완료 · 퇴근 가능";
-    return;
-  }
-
-  if (last === "퇴근") {
-    inBtn.disabled = true;
-    outBtn.disabled = true;
-    msg.innerText = "오늘 출퇴근 완료";
-  }
-}
-
-async function send(type) {
-  const user = JSON.parse(localStorage.getItem(KEY));
-  const msg = document.getElementById("msg");
-  const inBtn = document.getElementById("inBtn");
-  const outBtn = document.getElementById("outBtn");
-
-  if (!user) {
-    msg.innerText = "직원 정보를 다시 등록해주세요";
-    return;
-  }
-
-  msg.innerText = type + " 처리중...";
-
-  if (type === "출근") inBtn.innerText = "출근 처리중...";
-  if (type === "퇴근") outBtn.innerText = "퇴근 처리중...";
-
-  inBtn.disabled = true;
-  outBtn.disabled = true;
-
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify({
-        name: user.name,
-        phone: user.phone,
-        type: type,
-        store: "평촌 소바공방",
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent
-      })
-    });
-
-    localStorage.setItem(ACTION_KEY, type);
-    localStorage.setItem(DATE_KEY, todayKey());
-
-    msg.innerText = type + " 완료되었습니다";
-
-  } catch (e) {
-    msg.innerText = "오류가 발생했습니다. 다시 시도해주세요";
-  }
-
-  inBtn.innerText = "출근";
-  outBtn.innerText = "퇴근";
-
-  updateBtn();
-}
-
-function reset() {
-  if (!confirm("직원 정보를 다시 등록하시겠습니까?")) return;
+  if (!confirmed) return;
 
   localStorage.removeItem(KEY);
   localStorage.removeItem(ACTION_KEY);
   localStorage.removeItem(DATE_KEY);
 
   location.reload();
+}
+
+
+/************************************************
+ * 공통 유틸
+ ************************************************/
+
+function getSavedUser() {
+  const text = localStorage.getItem(KEY);
+
+  if (!text) return null;
+
+  try {
+    const user = JSON.parse(text);
+
+    if (
+      !user ||
+      !user.name ||
+      !user.phone
+    ) {
+      return null;
+    }
+
+    return {
+      name: String(user.name).trim(),
+      phone: normalizePhone(user.phone)
+    };
+
+  } catch (error) {
+    localStorage.removeItem(KEY);
+    return null;
+  }
+}
+
+
+function normalizePhone(value) {
+  return String(value || "")
+    .replace(/[^0-9]/g, "");
+}
+
+
+function formatPhoneInput(input) {
+  const value = normalizePhone(input.value)
+    .slice(0, 11);
+
+  if (value.length <= 3) {
+    input.value = value;
+    return;
+  }
+
+  if (value.length <= 7) {
+    input.value =
+      value.slice(0, 3) +
+      "-" +
+      value.slice(3);
+
+    return;
+  }
+
+  input.value =
+    value.slice(0, 3) +
+    "-" +
+    value.slice(3, 7) +
+    "-" +
+    value.slice(7);
+}
+
+
+function showStatus(element, text, type) {
+  element.classList.remove(
+    "error",
+    "success"
+  );
+
+  if (type) {
+    element.classList.add(type);
+  }
+
+  element.innerText = text || "";
+}
+
+
+function clearStatus(element) {
+  element.classList.remove(
+    "error",
+    "success"
+  );
+
+  element.innerText = "";
+}
+
+
+function getErrorMessage(error) {
+  if (!error) {
+    return "알 수 없는 오류가 발생했습니다.";
+  }
+
+  return error.message || String(error);
 }
 </script>
 
