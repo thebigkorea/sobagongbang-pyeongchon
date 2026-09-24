@@ -194,6 +194,39 @@ button:disabled {
     font-size: 24px;
   }
 }
+
+/* ===== 더큰코리아 공통 로고 / 출퇴근 표시 ===== */
+.company-logo-img{
+  display:block;
+  width:min(230px,72%);
+  max-height:72px;
+  object-fit:contain;
+  margin:0 auto 10px;
+}
+.attendance-times{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:14px 0 2px;
+}
+.time-box{
+  border:1px solid #eadfD3;
+  background:#fbf8f4;
+  border-radius:14px;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:52px;
+}
+.time-box span{font-size:14px;color:#786656;font-weight:800;}
+.time-box strong{font-size:19px;color:#352419;}
+@media(max-width:520px){
+  .company-logo-img{width:min(210px,76%);max-height:62px;}
+  .attendance-times{gap:8px;}
+  .time-box{padding:10px 12px;}
+}
+
 </style>
 </head>
 
@@ -203,6 +236,7 @@ button:disabled {
 
   <!-- 직원등록 화면 -->
   <div id="register" class="card">
+    <img class="company-logo-img" src="images/thebigkorea-logo.png" alt="더큰코리아 로고">
     <div class="title">소바공방</div>
     <div class="sub">평촌점 직원등록</div>
 
@@ -242,11 +276,17 @@ button:disabled {
 
   <!-- 출퇴근 화면 -->
   <div id="main" class="card" style="display:none;">
+    <img class="company-logo-img" src="images/thebigkorea-logo.png" alt="더큰코리아 로고">
     <div class="title">출퇴근</div>
     <div id="userName" class="sub"></div>
 
     <div class="store-info">
       평촌 소바공방 · 롯데백화점 7층
+    </div>
+
+    <div class="attendance-times">
+      <div class="time-box"><span>출근</span><strong id="inTime">--:--</strong></div>
+      <div class="time-box"><span>퇴근</span><strong id="outTime">--:--</strong></div>
     </div>
 
     <button
@@ -304,6 +344,8 @@ const STORE_LNG = 126.9498194;
 const KEY = "SOBA_PYEONGCHON_USER";
 const ACTION_KEY = "SOBA_PYEONGCHON_ACTION";
 const DATE_KEY = "SOBA_PYEONGCHON_ACTION_DATE";
+const IN_TIME_KEY = "SOBA_PYEONGCHON_IN_TIME";
+const OUT_TIME_KEY = "SOBA_PYEONGCHON_OUT_TIME";
 
 
 /************************************************
@@ -430,102 +472,67 @@ function handleRegisterEnter(event) {
 
 async function sendAttendance(type) {
   const user = getSavedUser();
-
   const msg = document.getElementById("msg");
-  const inBtn = document.getElementById("inBtn");
-  const outBtn = document.getElementById("outBtn");
-  const locationStatus =
-    document.getElementById("locationStatus");
-
-  clearStatus(msg);
 
   if (!user) {
-    showStatus(
-      msg,
-      "직원 정보를 다시 등록해주세요.",
-      "error"
-    );
-
+    showStatus(msg, "직원 정보를 다시 등록해주세요.", "error");
     return;
   }
 
-  const previousAction =
-    localStorage.getItem(ACTION_KEY);
+  // 길채정·한국의집·본사와 동일: 누르는 즉시 완료 표시
+  const instantTime = nowHHMM();
+  localStorage.setItem(ACTION_KEY, type);
+  localStorage.setItem(DATE_KEY, todayKey());
+  localStorage.setItem(type === "출근" ? IN_TIME_KEY : OUT_TIME_KEY, instantTime);
+  updateButtons();
+  renderTimes();
+  showStatus(msg, "✓ " + instantTime + " " + type + " 완료", "success");
 
-  inBtn.disabled = true;
-  outBtn.disabled = true;
+  // GPS와 서버 저장은 백그라운드에서 진행
+  getLocation()
+    .then(function(locationData) {
+      renderLocationStatus(locationData);
+      return apiRequest({
+        name: user.name,
+        phone: user.phone,
+        type: type,
+        store: STORE_NAME,
+        timestamp: new Date().toISOString(),
+        latitude: locationData.latitude,
+        longitude: locationData.longitude,
+        distance: locationData.distance,
+        userAgent: navigator.userAgent
+      });
+    })
+    .then(function(result) {
+      // 서버 저장이 확인되면 완료 상태만 유지합니다.
+      if (result && result.success === true) {
+        showStatus(msg, "✓ " + instantTime + " " + type + " 완료", "success");
+        return;
+      }
 
-  if (type === "출근") {
-    inBtn.innerText = "출근 처리중...";
-  }
-
-  if (type === "퇴근") {
-    outBtn.innerText = "퇴근 처리중...";
-  }
-
-  showStatus(msg, "현재 위치를 확인하고 있습니다.", "");
-
-  locationStatus.classList.add("show");
-  locationStatus.innerText =
-    "GPS 위치정보를 확인하는 중입니다.";
-
-  try {
-    const locationData = await getLocation();
-
-    renderLocationStatus(locationData);
-
-    showStatus(
-      msg,
-      type + " 기록을 저장하고 있습니다.",
-      ""
-    );
-
-    const result = await apiRequest({
-      name: user.name,
-      phone: user.phone,
-      type: type,
-      store: STORE_NAME,
-      timestamp: new Date().toISOString(),
-
-      latitude: locationData.latitude,
-      longitude: locationData.longitude,
-      distance: locationData.distance,
-
-      userAgent: navigator.userAgent
+      // 중복 기록 등 서버가 명확한 메시지를 준 경우에만 안내
+      if (result && result.message) {
+        console.warn("소바공방 출퇴근 서버 응답:", result.message);
+      }
+    })
+    .catch(function(error) {
+      // 응답 지연 때문에 직원 화면에 빨간 오류를 띄우지 않습니다.
+      console.warn("소바공방 백그라운드 저장 확인 실패:", error);
     });
+}
 
-    if (!result || result.success !== true) {
-      throw new Error(
-        result && result.message
-          ? result.message
-          : type + " 처리에 실패했습니다."
-      );
-    }
+function nowHHMM() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, "0") + ":" +
+         String(d.getMinutes()).padStart(2, "0");
+}
 
-    localStorage.setItem(ACTION_KEY, type);
-    localStorage.setItem(DATE_KEY, todayKey());
-
-    updateButtons();
-
-    showStatus(
-      msg,
-      result.message || type + " 처리가 완료되었습니다.",
-      "success"
-    );
-
-  } catch (error) {
-    restoreButtons(previousAction);
-
-    showStatus(
-      msg,
-      "처리 실패: " + getErrorMessage(error),
-      "error"
-    );
-
-  } finally {
-    inBtn.innerText = "출근";
-    outBtn.innerText = "퇴근";
-  }
+function renderTimes() {
+  const inTime = document.getElementById("inTime");
+  const outTime = document.getElementById("outTime");
+  if (inTime) inTime.textContent = localStorage.getItem(IN_TIME_KEY) || "--:--";
+  if (outTime) outTime.textContent = localStorage.getItem(OUT_TIME_KEY) || "--:--";
 }
 
 
@@ -643,9 +650,9 @@ function getLocation() {
       },
 
       {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
+        enableHighAccuracy: false,
+        timeout: 5000,
+        maximumAge: 60000
       }
     );
   });
@@ -720,6 +727,7 @@ function showMain(user) {
     user.name + "님";
 
   updateButtons();
+  renderTimes();
 }
 
 
@@ -818,6 +826,8 @@ function resetDailyIfNeeded() {
   if (savedDate && savedDate !== today) {
     localStorage.removeItem(ACTION_KEY);
     localStorage.removeItem(DATE_KEY);
+    localStorage.removeItem(IN_TIME_KEY);
+    localStorage.removeItem(OUT_TIME_KEY);
   }
 }
 
@@ -836,6 +846,8 @@ function resetEmployee() {
   localStorage.removeItem(KEY);
   localStorage.removeItem(ACTION_KEY);
   localStorage.removeItem(DATE_KEY);
+  localStorage.removeItem(IN_TIME_KEY);
+  localStorage.removeItem(OUT_TIME_KEY);
 
   location.reload();
 }
